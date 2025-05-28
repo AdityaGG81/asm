@@ -1,0 +1,116 @@
+DATA SEGMENT
+MSG1 Db 10,13, "Addition of array:- $"
+MSG2 Db 10,13, "Avg of array:- $"
+MSG3 Db 10,13, "Multiplication is:- $"
+num1 db 50h
+num2 db 20h
+no Db 10h,10h,10h,10h,10h
+n db 05h
+c db 04h
+res dw 00h
+highest dw 00h
+data ends
+
+code segment
+assume cs:code, ds:data
+start:
+mov ax,data
+mov ds,ax
+
+lea dx,msg1
+mov ah,09h
+int 21h
+mov ah,00h
+mov si,00h
+mov al,[no+si]
+up2: inc si
+mov bl,[no+si]
+add al,bl
+jnc down9
+inc ah
+down9:
+dec [c]
+jnz up2
+
+mov [highest],ax
+mov bl,al
+call display
+
+lea dx,msg2
+mov ah,09h
+int 21h
+
+mov ax,[highest]
+mov bl,05h
+div bl
+mov bl,al
+call display
+
+lea dx,msg3
+mov ah,09h
+int 21h
+
+mov ah,00h
+mov ch,00h
+mov al,[num1]
+mov cl,[num2]
+mul cx
+mov [res],ax
+mov bx,[res]
+mov bl,bh
+call display
+mov bx,[res]
+call display
+
+mov ah,4ch
+int 21h
+
+take proc near
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down0
+sub al,07h
+down0: sub al,30h
+mov cl,04h
+rol al,cl
+mov bl,al
+
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down1
+sub al,07h
+down1: sub al,30h
+add bl,al
+ret
+take endp
+
+display proc near
+mov ch,bl
+and bl,0f0h
+mov cl,04h
+rol bl,cl
+cmp bl,09h
+jbe down2
+add bl,07h
+down2: add bl,30h
+mov dl,bl
+mov ah,02h
+int 21h
+
+mov bl,ch
+and bl,0fh
+cmp bl,09h
+jbe down3
+add bl,07h
+down3: add bl,30h
+
+mov dl,bl
+mov ah,02h
+int 21h
+ret
+display endp
+
+code ends
+end start

@@ -1,0 +1,235 @@
+promt macro msg
+lea dx,msg
+mov ah,09h
+int 21h
+endm
+
+data segment
+msg1 db 10,13,"Enter BCD no:- $"
+msg2 db 10,13,"Converted Hex no:- $"
+msg3 db 10,13,"Error...Enter valid BCD no.:- $"
+msg4 db 10,13,"ENTER HEX NO.:- $"
+msg5 db 10,13,"CONVERTED BCD NO.:- $"
+ans db 05 dup(0)
+n db 01h
+result dw 00h
+data ends
+
+code segment
+assume cs:code,ds:data
+start:
+mov ax,data
+mov ds,ax
+
+ call bcd_to_hex
+ call hex_to_bcd
+mov ah,4ch
+int 21h
+
+bcd_to_hex proc near
+promt msg1
+up0:
+inc [n]
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down0
+lea dx,msg3
+mov ah,09h
+int 21h
+dec [n]
+jnz up0
+down0:
+sub al,30h
+mov cx,2710h
+mov ah,00h
+mul cx
+jnc down1
+inc ah
+down1:
+mov [result],ax
+
+up1:
+inc [n]
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down2
+lea dx,msg3
+mov ah,09h
+int 21h
+dec [n]
+jnz up1
+down2:
+sub al,30h
+mov cx,03E8h
+mov ah,00h
+mul cx
+jnc down3
+inc ah
+down3:
+add [result],ax
+
+up2:
+inc [n]
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down4
+lea dx,msg3
+mov ah,09h
+int 21h
+dec [n]
+jnz up2
+down4:
+sub al,30h
+mov cx,0064h
+mov ah,00h
+mul cx
+jnc down5
+inc ah
+down5:
+add [result],ax
+
+up3:
+inc [n]
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down6
+lea dx,msg3
+mov ah,09h
+int 21h
+dec [n]
+jnz up3
+down6:
+sub al,30h
+mov cx,000Ah
+mov ah,00h
+mul cx
+jnc down7
+inc ah
+down7:
+add [result],ax
+
+up4:
+inc [n]
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down8
+lea dx,msg3
+mov ah,09h
+int 21h
+dec [n]
+jnz up4
+down8:
+sub al,30h
+mov ah,00h
+add [result],ax
+
+
+lea dx,msg2
+mov ah,09h 
+int 21h
+
+mov bx,[result]
+mov bl,bh
+call display
+mov bx,[result]
+call display
+ret
+bcd_to_hex endp
+
+
+hex_to_bcd proc near
+promt msg4
+
+call take
+mov bh,bl
+call take
+mov ax,bx
+
+mov dx,0000h
+mov si,0000h
+mov bx,000Ah
+mov cl,00h
+up5:
+div bx
+mov [ans+si],dl
+inc si
+inc cl
+mov dx,0000h
+cmp ax,0001h
+jnc up5
+
+
+promt msg5
+dec si
+up6:
+mov bl,[ans+si]
+cmp bl,09h
+jbe down9
+add bl,07h
+down9: add bl,30h
+mov dl,bl
+mov ah,02h
+int 21h
+dec si
+dec cl
+jnz up6
+ret
+hex_to_bcd endp
+
+mov ah,4ch
+int 21h
+
+take proc near
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down10
+sub al,07h
+down10:sub al, 30h
+mov cl,04h
+rol al,cl
+mov bl,al
+
+mov ah,01h
+int 21h
+cmp al,39h
+jbe down11
+sub al,07h
+down11:sub al, 30h
+
+add bl,al
+ret
+take endp
+
+display proc near
+mov ch,bl
+and bl,0f0h
+mov cl,04h
+rol bl,cl
+cmp bl,09h
+jbe down12
+add bl,07h
+down12: add bl,30h
+mov dl,bl
+mov ah,02h
+int 21h
+
+mov bl,ch
+and bl,0fh
+cmp bl, 09h
+jbe down13
+add bl,07h
+down13: add bl,30h
+mov dl,bl
+mov ah,02h
+int 21h
+
+ret
+display endp
+code ends
+end start

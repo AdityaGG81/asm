@@ -1,0 +1,51 @@
+#include <conio.h>
+#include <stdio.h>
+#include <dos.h>
+#include <string.h>
+
+union REGS reg;
+
+int main() {
+    char fname[25], f1name[25];
+
+    // Create Directory
+    printf("Enter the pathname of Directory: ");
+    gets(fname);
+    reg.h.ah = 0x39; // DOS function: Create directory
+    reg.x.dx = (unsigned int)fname;
+    int86(0x21, &reg, &reg);
+    if (reg.x.cflag) {
+        printf("Directory not created.\n");
+    } else {
+        printf("Directory Created.\n");
+    }
+
+    // Create File
+    printf("Enter the pathname of File: ");
+    gets(f1name);
+    reg.h.ah = 0x3C; // DOS function: Create file
+    reg.x.cx = 0;
+    reg.x.dx = (unsigned int)f1name;
+    int86(0x21, &reg, &reg);
+    if (reg.x.cflag) {
+        printf("File not created.\n");
+    } else {
+        printf("File Created.\n");
+    }
+
+    // Delete File
+    printf("Enter the pathname of file to be deleted: ");
+    gets(f1name);
+    reg.h.ah = 0x41; // DOS function: Delete file
+    reg.x.dx = (unsigned int)f1name;
+    int86(0x21, &reg, &reg);
+    if (reg.x.cflag) {
+        printf("File not deleted.\n");
+    } else {
+        printf("File Deleted.\n");
+    }
+
+
+    getch();
+    return 0;
+}

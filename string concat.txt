@@ -1,0 +1,236 @@
+prompt macro msg 
+    lea dx, msg 
+    mov ah, 09h 
+    int 21h 
+endm 
+ 
+data segment 
+    str1 db 25h dup("$")  
+    str2 db 25h dup("$")  
+    str3 db 50h dup("$")  
+    newline db 10,13, "$" 
+    msg1 db 10,13,"***MENU***" 
+         db 10,13,"1. Enter First String" 
+         db 10,13,"2. Display First String" 
+         db 10,13,"3. Length of String" 
+         db 10,13,"4. Reverse First String" 
+         db 10,13,"5. Palindrome Check" 
+         db 10,13,"6. Concatenate Strings" 
+      db 10,13,"7. Check Equal" 
+         db 10,13,"8. Exit" 
+         db 10,13,"Enter the Choice:$" 
+    msg2 db 10,13,"Enter the First String:$" 
+    msg3 db 10,13,"Your String is:$" 
+    msg4 db 10,13,"Length of String is:$" 
+    msg5 db 10,13,"Reverse of String is:$" 
+    msg6 db 10,13,"String is Palindrome!!$" 
+    msg7 db 10,13,"String is Not Palindrome!!$" 
+    msg8 db 10,13,"Enter the Second String for 
+Concatenation:$" 
+    msg9 db 10,13,"Concatenated String is:$" 
+     msg13 db 10,13,"$" 
+    msg10 db 10,13,"ENter First string:$" 
+    msg11 db 10,13,"ENter second string:$" 
+ 
+   msg12 db 10,13,"Strings are equal $" 
+  msg14 db 10,13,"Strings are not equal $" 
+ 
+data ends 
+ 
+code segment 
+assume cs:code, ds:data, es:data 
+ 
+start: 
+    mov ax, data 
+    mov ds, ax 
+    mov es, ax 
+ 
+up1: 
+    prompt msg1 
+    mov ah, 01h 
+    int 21h 
+    cmp al, 31h 
+    je down1 
+    cmp al, 32h 
+    je down2 
+    cmp al, 33h 
+    je down3 
+    cmp al, 34h 
+    je down4 
+    cmp al, 35h 
+    je down5 
+    cmp al, 36h 
+    je down6 
+    cmp al, 37h 
+    je down7 
+    cmp al, 38h 
+    je down8 
+ 
+ 
+down1: 
+    prompt msg2 
+    call enter_str1  
+    jmp up1 
+ 
+down2: 
+    prompt msg3 
+    call display_str1  
+    jmp up1 
+ 
+down3: 
+    prompt msg4 
+    call len  
+    jmp up1 
+ 
+down4: 
+    prompt msg5 
+    prompt newline 
+    call rev  
+    call display_str2  
+    jmp up1 
+ 
+down5: 
+    call pali  
+    jmp up1 
+ 
+down6: 
+    prompt msg8 
+    call enter_str2  
+    prompt msg9 
+    call concat  
+    call display_str3  
+    jmp up1 
+ 
+down7: 
+    call equal 
+    jmp up1 
+ 
+ 
+down8: 
+    mov ah, 4Ch ; Exit 
+    int 21h 
+ 
+enter_str1 proc near 
+    mov ah, 0Ah 
+    lea dx, str1 
+    int 21h 
+    ret 
+enter_str1 endp 
+ 
+enter_str2 proc near 
+    mov ah, 0Ah 
+    lea dx, str2 
+    int 21h 
+    ret 
+enter_str2 endp 
+ 
+display_str1 proc near 
+    lea dx, [str1+2] 
+    mov ah, 09h 
+    int 21h 
+    ret 
+display_str1 endp 
+ 
+display_str2 proc near 
+    lea dx, str2 
+    mov ah, 09h 
+    int 21h 
+    ret 
+display_str2 endp 
+ 
+display_str3 proc near 
+    lea dx, str3 
+    mov ah, 09h 
+    int 21h 
+    ret 
+display_str3 endp 
+ 
+len proc near 
+    mov dl, [str1+1]  
+    cmp dl, 09h 
+    jbe down11 
+    add dl, 07h 
+down11: 
+    add dl, 30h 
+    mov ah, 02h 
+    int 21h 
+    ret 
+len endp 
+ 
+rev proc near 
+    mov di, 00h           
+    mov cl, [str1+1]      
+    mov ch, 00h 
+    mov si, cx            
+    add si, 1             
+up2: 
+    mov dl, [str1+si]     
+    mov [str2+di], dl     
+    inc di 
+    dec si 
+    jnz up2               
+    mov byte ptr [str2+di], '$'  
+    ret 
+rev endp 
+pali proc near 
+    call rev 
+    lea si, [str1+2]  
+    lea di, str2      
+    mov cl, [str1+1]  
+    cmp cl, 0 
+    je not_palindrome 
+compare_loop: 
+    mov al, [si]      
+    mov bl, [di]      
+    cmp al, bl       
+    jne not_palindrome 
+    inc si            
+    inc di           
+    loop compare_loop 
+    prompt msg6        
+    ret 
+ 
+not_palindrome: 
+    prompt msg7        
+    ret 
+pali endp 
+ 
+ concat proc near 
+ 
+     lea si, [str1+2]  
+     lea di, str3  
+     mov cl, [str1+1]  
+     repz movsb 
+        lea si, [str2+2] ;  
+        mov cl, [str2+1]  
+         repz movsb 
+      ret 
+concat endp 
+equal proc near 
+prompt msg10 
+mov ah,0ah 
+lea dx,str1 
+int 21h 
+prompt msg11 
+mov ah,0ah 
+lea dx,str2 
+int 21h 
+ 
+lea si,[str1+1] 
+lea di,[str2+1] 
+ 
+mov cl,[str1+1] 
+mov bl,[str2+1] 
+cmp cl,bl 
+jne notequal 
+repz cmpsb 
+jnz notequal 
+prompt msg12 
+jmp endcompare 
+notequal: 
+prompt msg14 
+endcompare: 
+ret 
+equal endp 
+code ends 
+end start
